@@ -17,10 +17,10 @@ class NewsDetailSerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = ["id", "name", "ticker", "current_price"]
+        fields = ["id", "name", "ticker", "current_price", "get_price_change"]
 
 
 class StockDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = ["id", "name", "ticker", "current_price", "price_history"]
+        fields = ["id", "name", "ticker", "current_price", "get_price_change", "price_history"]

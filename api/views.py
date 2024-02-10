@@ -2,6 +2,7 @@ from rest_framework import generics
 from core.models import News, Stock
 from . import serializers
 
+
 class NewsList(generics.ListAPIView):
     queryset = News.objects.all()
     serializer_class = serializers.NewsSerializer
@@ -26,7 +27,7 @@ class StockList(generics.ListAPIView):
         return self.queryset.order_by("name")
 
 
-class StockDetail(generics.ListAPIView):
+class StockDetail(generics.RetrieveAPIView):
     queryset = Stock.objects.all()
     serializer_class = serializers.StockDetailSerializer
 
