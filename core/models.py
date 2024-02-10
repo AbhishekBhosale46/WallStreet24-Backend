@@ -49,6 +49,10 @@ class Stock(models.Model):
     def __str__(self):
         return f"{self.name}-{self.ticker}"
 
+    def get_price_change(self):
+        last_traded_price = (self.price_history[-1]).get("price")
+        return ((self.current_price-last_traded_price)/last_traded_price)*100
+
 
 class News(models.Model):
     title = models.TextField()
