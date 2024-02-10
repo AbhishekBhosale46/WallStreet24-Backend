@@ -14,6 +14,10 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        user_portfolio = Portfolio.objects.create(
+            user=user,
+            cash=9999999
+        )
         return user
 
     def create_superuser(self, email, password):
@@ -82,10 +86,10 @@ class Transaction(models.Model):
 class Portfolio(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     cash = models.IntegerField()
-    networth = models.IntegerField()
+    # networth = models.IntegerField()
 
     def __str__(self) -> str:
-        return f"{self.user.email}-{self.networth}"
+        return f"{self.user.email}"
 
 
 class Holding(models.Model):
