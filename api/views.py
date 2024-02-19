@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from decimal import Decimal
 from core.models import News, Stock, Portfolio, Transaction, Holding
 from . import serializers
 
@@ -41,7 +42,7 @@ def buy_stock(request, id):
     
     user = request.user
     stock = get_object_or_404(Stock, id=id)
-    portfolio = Portfolio.objects.filter(user=user)
+    portfolio = Portfolio.objects.get(user=user)
 
     buy_price = request.data.get("price", None)
     buy_qty = request.data.get("quantity", None)
@@ -51,6 +52,9 @@ def buy_stock(request, id):
 
     if not buy_qty:
         return Response({"detail": "Buy quantity not given"}, status=status.HTTP_400_BAD_REQUEST)
+
+    buy_price = Decimal(buy_price)
+    buy_qty = int(buy_qty)
 
     price_diff = ((buy_price-stock.current_price)/(stock.current_price))*100
     if price_diff > 2 or price_diff < -2:
