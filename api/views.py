@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
+from django.db.models import Sum
 from core.models import News, Stock, Portfolio, Transaction, Holding
 from . import serializers
 
@@ -60,6 +61,16 @@ def buy_stock(request, id):
     if price_diff > 2 or price_diff < -2:
         return Response({"detail": "Cannot buy at this price"}, status=status.HTTP_400_BAD_REQUEST)
 
+    available_cash = Decimal(portfolio.cash)
+    required_cash = buy_price * buy_qty
+
+    if required_cash > available_cash:
+        return Response({"detail": "You don't have enough cash to buy this stock"}, status=status.HTTP_400_BAD_REQUEST)
+
+    available_cash = available_cash - required_cash
+    portfolio.cash = available_cash
+    portfolio.save()
+
     transaction = Transaction.objects.create(
         user=user,
         stock=stock,
@@ -77,4 +88,3 @@ def buy_stock(request, id):
 
     return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
     
-
