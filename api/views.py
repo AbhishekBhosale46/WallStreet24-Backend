@@ -87,4 +87,44 @@ def buy_stock(request, id):
     )
 
     return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+def sell_stock(request, id):
+
+    user = request.user
+    stock = get_object_or_404(Stock, id=id)
+    portfolio = Portfolio.objects.get(user=user)
+
+    sell_price = request.data.get("price", None)
+    sell_qty = request.data.get("quantity", None)
+
+    if not sell_price:
+        return Response({"detail": "Sell price not given"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not sell_qty:
+        return Response({"detail": "Sell quantity not given"}, status=status.HTTP_400_BAD_REQUEST)
+
+    sell_price = Decimal(sell_price)
+    sell_qty = int(sell_qty)
+
+    price_diff = ((sell_price-stock.current_price)/(stock.current_price))*100
+    if price_diff > 2 or price_diff < -2:
+        return Response({"detail": "Cannot sell at this price"}, status=status.HTTP_400_BAD_REQUEST)
     
+    available_holdings = Holding.objects.filter(portfolio=portfolio, stock=stock).order_by("transaction__transaction_datetime")
+    available_qty = (available_holdings.aggregate(total_qty=Sum("quantity"))).get("total_qty", 0)
+
+    if sell_qty>available_qty:
+        return Response({"detail": "You don't have enough available stocks"}, status=status.HTTP_400_BAD_REQUEST)
+
+    for holding in available_holdings:
+        if sell_qty==0:
+            break
+        holding.quantity -= min(holding.quantity, sell_qty)
+        sell_qty -= min(holding.quantity, sell_qty)
+        holding.save()
+        if holding.quantity == 0:
+            holding.delete()
+
+    return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
