@@ -113,6 +113,10 @@ def sell_stock(request, id):
         return Response({"detail": "Cannot sell at this price"}, status=status.HTTP_400_BAD_REQUEST)
     
     available_holdings = Holding.objects.filter(portfolio=portfolio, stock=stock).order_by("transaction__transaction_datetime")
+
+    if not available_holdings.exists():
+        return Response({"detail": "You don't have any holdings for the requested stock"}, status=status.HTTP_400_BAD_REQUEST)
+
     available_qty = (available_holdings.aggregate(total_qty=Sum("quantity"))).get("total_qty", 0)
 
     if sell_qty>available_qty:
