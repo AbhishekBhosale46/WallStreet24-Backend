@@ -125,10 +125,22 @@ def sell_stock(request, id):
     for holding in available_holdings:
         if sell_qty==0:
             break
-        holding.quantity -= min(holding.quantity, sell_qty)
-        sell_qty -= min(holding.quantity, sell_qty)
+        diff = min(holding.quantity, sell_qty)
+        holding.quantity -= diff
+        sell_qty -= diff
         holding.save()
         if holding.quantity == 0:
             holding.delete()
+
+    portfolio.cash += (sell_qty * sell_price)
+    portfolio.save
+
+    transaction = Transaction.objects.create(
+        user=user,
+        stock=stock,
+        traded_price=sell_price,
+        quantity=sell_qty,
+        transaction_type="sell"
+    )
 
     return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
