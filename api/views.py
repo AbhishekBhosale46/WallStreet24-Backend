@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.db.models import Sum
 from core.models import News, Stock, Portfolio, Transaction, Holding
 from . import serializers
+from rest_framework.views import APIView
 
 
 class NewsList(generics.ListAPIView):
@@ -144,3 +145,12 @@ def sell_stock(request, id):
     )
 
     return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
+
+
+class PortfolioApi(APIView):
+
+    def get(self, request):
+        user = request.user
+        portfolio = Portfolio.objects.get(user=user)
+        portfolio_serializer = serializers.PortfolioSerializer(portfolio)
+        return Response(portfolio_serializer.data, status=status.HTTP_200_OK)
