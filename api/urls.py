@@ -6,7 +6,7 @@ urlpatterns = [
     path('news/<int:pk>', views.NewsDetail.as_view(), name='news-detail'),
     path('stocks/', views.StockList.as_view(), name='stocks-list'),
     path('stocks/<int:pk>', views.StockDetail.as_view(), name='stocks-detail'),
-    path('stocks/buy/<int:id>', views.buy_stock, name='buy-stock'),
-    path('stocks/sell/<int:id>', views.sell_stock, name='sell-stock'),
+    path('stocks/buy/<int:id>', views.BuyStockApi.as_view(), name='buy-stock'),
+    path('stocks/sell/<int:id>', views.SellStockApi.as_view(), name='sell-stock'),
     path('portfolio/', views.PortfolioApi.as_view(), name='portfolio')
 ]
