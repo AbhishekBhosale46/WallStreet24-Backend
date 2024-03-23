@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -153,3 +154,21 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+
+# Celery Settings
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+
+# Celer beat scheduling
+CELERY_BEAT_SCHEDULE = {
+    'release_news_every_10_minutes': {
+        'task': 'api.tasks.publish_news',
+        'schedule': crontab(minute='*/10')
+    },
+    'update_stock_prices_every_5_minutes':{
+        'task': 'api.tasks.update_prices',
+        'schedule': crontab(minute='*/5')
+    }
+} 

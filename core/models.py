@@ -64,6 +64,8 @@ class News(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     sentiment = models.CharField(max_length=10, choices=[('positive', 'positive'), ('negative', 'negative')])
     impact = models.FloatField()
+    decay_factor = models.DecimalField(max_digits=6, decimal_places=2)
+    decay_rate = models.DecimalField(max_digits=6, decimal_places=2)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
 
