@@ -4,6 +4,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from decimal import Decimal
 
 
 class UserManager(BaseUserManager):
@@ -53,9 +54,9 @@ class Stock(models.Model):
     def __str__(self):
         return f"{self.name}-{self.ticker}"
 
-    def get_price_change(self):
-        last_traded_price = (self.price_history[-1]).get("price")
-        return ((self.current_price-last_traded_price)/last_traded_price)*100
+    def price_change(self):
+        last_traded_price = Decimal((self.price_history[-1]).get("price"))
+        return str(((self.current_price-last_traded_price)/last_traded_price)*100)
 
 
 class News(models.Model):
