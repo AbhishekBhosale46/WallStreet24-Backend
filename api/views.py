@@ -11,6 +11,8 @@ from rest_framework.views import APIView
 
 
 class NewsList(generics.ListAPIView):
+    authentication_classes = []
+    permission_classes = []
     queryset = News.objects.all()
     serializer_class = serializers.NewsSerializer
 
@@ -19,6 +21,8 @@ class NewsList(generics.ListAPIView):
 
 
 class NewsDetail(generics.RetrieveAPIView):
+    authentication_classes = []
+    permission_classes = []
     queryset = News.objects.all()
     serializer_class = serializers.NewsSerializer
 

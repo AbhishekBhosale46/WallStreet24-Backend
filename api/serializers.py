@@ -4,9 +4,14 @@ from django.db.models import Sum, F
 
 
 class NewsSerializer(serializers.ModelSerializer):
+    short_description = serializers.SerializerMethodField();
+    
     class Meta:
         model = News
-        fields = ["id", "title", "published_at"]
+        fields = ["id", "title", "short_description", "published_at"]
+
+    def get_short_description(self, news):
+        return news.description[0:200]
 
 
 class NewsDetailSerializer(serializers.ModelSerializer):
