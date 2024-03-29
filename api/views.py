@@ -162,3 +162,24 @@ class PortfolioApi(APIView):
         portfolio_serializer = serializers.PortfolioSerializer(portfolio)
 
         return Response(portfolio_serializer.data, status=status.HTTP_200_OK)
+
+
+class UserCashApi(APIView):
+
+    def get(self, request):
+        user = request.user
+        portfolio = Portfolio.objects.get(user=user)
+        return Response({'cash': portfolio.cash}, status=status.HTTP_200_OK)
+
+
+class UserStocksApi(APIView):
+
+    def get(self, request, id):
+        user = request.user
+        stock = get_object_or_404(Stock, id=id)
+        portfolio = Portfolio.objects.get(user=user)
+        available_holdings = Holding.objects.filter(portfolio=portfolio, stock=stock).order_by("transaction__transaction_datetime")
+        available_qty = (available_holdings.aggregate(total_qty=Sum("quantity"))).get("total_qty", 0)
+        if not available_holdings.exists():
+            available_qty = 0
+        return Response({'available_quantity': available_qty}, status=status.HTTP_200_OK)

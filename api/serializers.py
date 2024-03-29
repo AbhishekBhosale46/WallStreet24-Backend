@@ -47,7 +47,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         user = portfolio.user.id
         holdings = Holding.objects.filter(portfolio__user__id=user,
         transaction__transaction_type="buy").values("stock","stock__name", "stock__ticker").annotate(
-        avg_price = (Sum( F("transaction__traded_price") * F("transaction__quantity") ) / Sum("transaction__quantity")),
-        total_quantity=Sum("transaction__quantity")
+        avg_price = (Sum( F("transaction__traded_price") * F("quantity") ) / Sum("quantity")),
+        total_quantity=Sum("quantity")
         )
         return list(holdings)

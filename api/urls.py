@@ -8,5 +8,7 @@ urlpatterns = [
     path('stocks/<int:pk>', views.StockDetail.as_view(), name='stocks-detail'),
     path('stocks/buy/<int:id>', views.BuyStockApi.as_view(), name='buy-stock'),
     path('stocks/sell/<int:id>', views.SellStockApi.as_view(), name='sell-stock'),
-    path('portfolio/', views.PortfolioApi.as_view(), name='portfolio')
+    path('portfolio/', views.PortfolioApi.as_view(), name='portfolio'),
+    path('cash/', views.UserCashApi.as_view(), name='cash'),
+    path('availablequantity/<int:id>', views.UserStocksApi.as_view(), name='available-qty')
 ]
