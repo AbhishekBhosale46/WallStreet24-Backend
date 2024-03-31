@@ -183,3 +183,11 @@ class UserStocksApi(APIView):
         if not available_holdings.exists():
             available_qty = 0
         return Response({'available_quantity': available_qty}, status=status.HTTP_200_OK)
+
+
+class TransactionList(generics.ListAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = serializers.TransactionSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user).order_by("-transaction_datetime")

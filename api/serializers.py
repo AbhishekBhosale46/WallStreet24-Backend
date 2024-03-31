@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import News, Stock, Portfolio, Holding
+from core.models import News, Stock, Portfolio, Holding, Transaction
 from django.db.models import Sum, F
 
 
@@ -46,8 +46,19 @@ class PortfolioSerializer(serializers.ModelSerializer):
     def get_holdings(self, portfolio):
         user = portfolio.user.id
         holdings = Holding.objects.filter(portfolio__user__id=user,
-        transaction__transaction_type="buy").values("stock","stock__name", "stock__ticker").annotate(
+        transaction__transaction_type="buy").values("stock","stock__name", "stock__ticker", "stock__current_price").annotate(
         avg_price = (Sum( F("transaction__traded_price") * F("quantity") ) / Sum("quantity")),
         total_quantity=Sum("quantity")
         )
         return list(holdings)
+
+class TransactionSerializer(serializers.ModelSerializer):
+    ticker = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transaction
+        fields = ["id", "ticker", "traded_price", "quantity", "transaction_type", "transaction_datetime"]
+
+    def get_ticker(self, transaction):
+        return transaction.stock.ticker
+    
