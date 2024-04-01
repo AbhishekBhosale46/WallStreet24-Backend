@@ -11,5 +11,6 @@ urlpatterns = [
     path('portfolio/', views.PortfolioApi.as_view(), name='portfolio'),
     path('cash/', views.UserCashApi.as_view(), name='cash'),
     path('availablequantity/<int:id>', views.UserStocksApi.as_view(), name='available-qty'),
-    path('transactions/', views.TransactionList.as_view(), name='transactions')
+    path('transactions/', views.TransactionList.as_view(), name='transactions'),
+    path('market/', views.market_status, name='market-status')
 ]

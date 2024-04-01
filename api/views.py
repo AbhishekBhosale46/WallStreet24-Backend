@@ -1,11 +1,11 @@
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.db.models import Sum
-from core.models import News, Stock, Portfolio, Transaction, Holding
+from core.models import News, Stock, Portfolio, Transaction, Holding, Market
 from . import serializers
 from rest_framework.views import APIView
 
@@ -191,3 +191,10 @@ class TransactionList(generics.ListAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user).order_by("-transaction_datetime")
+
+@api_view(['GET'])
+@permission_classes([])
+@authentication_classes([])
+def market_status(request):
+    market = Market.objects.get(id=1)
+    return Response({"is_open": market.is_open}, status=status.HTTP_200_OK)

@@ -103,3 +103,7 @@ class Holding(models.Model):
 
     def __str__(self) -> str:
         return f"{self.stock.name}-{self.quantity}"
+
+
+class Market(models.Model):
+    is_open = models.BooleanField(default=False)
