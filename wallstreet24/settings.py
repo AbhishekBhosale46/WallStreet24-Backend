@@ -171,7 +171,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'update_stock_prices_every_5_minutes':{
         'task': 'api.tasks.update_prices',
-        'schedule': crontab(minute='*/5')
+        'schedule': crontab(minute='*/3')
     }
 }
 
