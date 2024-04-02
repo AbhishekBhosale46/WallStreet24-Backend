@@ -20,15 +20,14 @@ def update_prices():
     for stock in Stock.objects.all():
         news = News.objects.filter(stock=stock, is_published=True, published_at__gte=datetime.now() - timedelta(minutes=15)).last()
         if news:
-            random_factor = random.uniform(0.9,1.1)
-            decay_factor = news.decay_factor
-            impact = Decimal(news.impact) \
-                    * Decimal(1 if news.sentiment == 'positive' else -1) \
-                    * Decimal(decay_factor) * Decimal(random_factor)
-            change = Decimal(stock.current_price) * Decimal(impact/100)
-            stock.current_price += Decimal(change)
-            news.decay_factor = news.decay_factor * news.decay_rate
-            news.save()
+            impact = news.impact
+            impact_no = news.impact_no
+            sentiment = (1 if news.sentiment == "positive" else -1)
+            change = (impact*(news.impacts[impact_no]/100))/100 
+            total_change = Decimal((stock.price_history[-impact_no]).get('price')) * Decimal(change) * Decimal(sentiment)
+            stock.current_price += Decimal(total_change)
+            news.impact_no += 1
+            news.save()     
         else:
             random_factor = random.uniform(-0.02, 0.02)
             change = stock.current_price * Decimal(random_factor)

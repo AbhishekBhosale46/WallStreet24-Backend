@@ -5,7 +5,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from decimal import Decimal
-
+import random
 
 class UserManager(BaseUserManager):
     
@@ -65,8 +65,8 @@ class News(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     sentiment = models.CharField(max_length=10, choices=[('positive', 'positive'), ('negative', 'negative')])
     impact = models.FloatField()
-    decay_factor = models.DecimalField(max_digits=6, decimal_places=2)
-    decay_rate = models.DecimalField(max_digits=6, decimal_places=2)
+    impact_no = models.IntegerField(default=1)
+    impacts = models.JSONField(default=list, blank=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
 
@@ -75,6 +75,24 @@ class News(models.Model):
 
     def __str__(self):
         return f"{self.title}"
+        
+    def divide_number_into_5_parts(self, number):
+        parts = []
+        for _ in range(4):
+            max_part = max(5, number / (5 - len(parts)))
+            part = random.uniform(5, max_part)
+            parts.append(round(part,2))
+            number -= part
+        parts.append(round(number,2))
+        random.shuffle(parts)
+        return parts
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            number = self.impact
+            parts = self.divide_number_into_5_parts(100)
+            self.impacts = parts
+        super().save(*args, **kwargs)
 
 
 class Transaction(models.Model):
