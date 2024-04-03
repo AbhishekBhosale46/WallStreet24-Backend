@@ -24,7 +24,7 @@ class NewsDetail(generics.RetrieveAPIView):
     authentication_classes = []
     permission_classes = []
     queryset = News.objects.all()
-    serializer_class = serializers.NewsSerializer
+    serializer_class = serializers.NewsDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(is_published=True)
