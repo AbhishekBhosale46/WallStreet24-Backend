@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python3 manage.py makemigrations &&
+             python3 manage.py migrate && 
+             python3 manage.py runserver 0.0.0.0:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  
+  celery:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: celery
+    depends_on:
+      - redis
+      - backend
+      - db
+    command: celery -A wallstreet24 worker -l info
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  celery-beat:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: celery-beat
+    depends_on:
+      - redis
+      - backend
+      - celery
+      - db
+    command: celery -A wallstreet24 beat -l info
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  db:
+    image: postgres
+    environment:
+        - POSTGRES_DB=postgres
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres

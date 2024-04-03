@@ -1,0 +1,13 @@
+Django
+djangorestframework
+djoser==2.1.0
+drf-extensions==0.7.1
+drf-spectacular==0.26.4
+django-cors-headers==3.14.0
+celery==5.2.7
+redis==4.5.5
+psycopg2-binary
+sqlparse
+pytz
+gunicorn
+python-dotenv
