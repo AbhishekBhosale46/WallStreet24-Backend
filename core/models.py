@@ -55,7 +55,7 @@ class Stock(models.Model):
         return f"{self.name}-{self.ticker}"
 
     def price_change(self):
-        last_traded_price = Decimal((self.price_history[-1]).get("price"))
+        last_traded_price = Decimal((self.price_history[-2]).get("price"))
         return str(((self.current_price-last_traded_price)/last_traded_price)*100)
 
 
