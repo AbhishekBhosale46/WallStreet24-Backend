@@ -129,6 +129,8 @@ class SellStockApi(APIView):
         if sell_qty>available_qty:
             return Response({"detail": "You don't have enough available stocks"}, status=status.HTTP_400_BAD_REQUEST)
 
+        temp_qty = sell_qty
+
         for holding in available_holdings:
             if sell_qty==0:
                 break
@@ -139,14 +141,14 @@ class SellStockApi(APIView):
             if holding.quantity == 0:
                 holding.delete()
 
-        portfolio.cash += (sell_qty * sell_price)
+        portfolio.cash += (temp_qty * sell_price)
         portfolio.save
 
         transaction = Transaction.objects.create(
             user=user,
             stock=stock,
             traded_price=sell_price,
-            quantity=sell_qty,
+            quantity=temp_qty,
             transaction_type="sell"
         )
 
