@@ -50,6 +50,7 @@ class Stock(models.Model):
     ticker = models.CharField(max_length=10)
     current_price = models.DecimalField(max_digits=10, decimal_places=2)
     price_history = models.JSONField(default=list, blank=True)
+    is_listed = models.BooleanField()
 
     def __str__(self):
         return f"{self.name}-{self.ticker}"
@@ -100,7 +101,7 @@ class Transaction(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     traded_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
-    transaction_type = models.CharField(max_length=5, choices=[('buy', 'sell'), ('buy', 'sell')])
+    transaction_type = models.CharField(max_length=5, choices=[('buy', 'buy'), ('sell', 'sell')])
     transaction_datetime = models.DateTimeField(auto_now_add=True)
 
 
@@ -125,3 +126,26 @@ class Holding(models.Model):
 
 class Market(models.Model):
     is_open = models.BooleanField(default=False)
+
+
+class Ipo(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    issue_size = models.IntegerField()
+    floor_price = models.IntegerField()
+    ceil_price = models.IntegerField()
+    lot_size = models.IntegerField()
+    red_herring_prospectus = models.TextField()
+    listing_price = models.IntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f"{self.stock.name}"
+
+
+class IpoSubscription(models.Model):
+    ipo = models.ForeignKey(Ipo, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    bid_price = models.IntegerField()
+    bid_quantity = models.IntegerField()
+    transaction_datetime = models.DateTimeField(auto_now_add=True)

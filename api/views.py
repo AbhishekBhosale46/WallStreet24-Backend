@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.db.models import Sum
-from core.models import News, Stock, Portfolio, Transaction, Holding, Market
+from core.models import News, Stock, Portfolio, Transaction, Holding, Market, Ipo, IpoSubscription
 from . import serializers
 from rest_framework.views import APIView
 
@@ -35,7 +35,7 @@ class StockList(generics.ListAPIView):
     serializer_class = serializers.StockSerializer
 
     def get_queryset(self):
-        return self.queryset.order_by("name")
+        return self.queryset.filter(is_listed=True).order_by("name")
 
 
 class StockDetail(generics.RetrieveAPIView):
@@ -193,6 +193,63 @@ class TransactionList(generics.ListAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user).order_by("-transaction_datetime")
+
+
+class IpoList(generics.ListAPIView):
+    queryset = Ipo.objects.all()
+    serializer_class = serializers.IpoSerializer
+
+
+class IpoDetail(generics.RetrieveAPIView):
+    queryset = Ipo.objects.all()
+    serializer_class = serializers.IpoSerializer
+
+
+class IpoSubscriptionApi(APIView):
+
+    def post(self, request, id):
+        
+        user = request.user
+        ipo = get_object_or_404(Ipo, id=id)
+        portfolio = Portfolio.objects.get(user=user)
+
+        bid_price = request.data.get("bid_price", None)
+        bid_qty = request.data.get("bid_quantity", None)
+
+        if not bid_price:
+            return Response({"detail": "Bid price not given"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not bid_qty:
+            return Response({"detail": "Bid Quantity not given"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if IpoSubscription.objects.filter(user=user).exists():
+            return Response({"detail": "You have already subscribed the ipo"}, status=status.HTTP_400_BAD_REQUEST)
+
+        bid_price = int(bid_price)
+        bid_qty = int(bid_qty)
+
+        if bid_price < ipo.floor_price or bid_price > ipo.ceil_price:
+            return Response({"detail": "Bid price must be within the range"}, status=status.HTTP_400_BAD_REQUEST)
+
+        required_cash = bid_price * bid_qty * ipo.lot_size
+
+        if required_cash > 200000:
+            return Response({"detail": "You cannot place order more than 2,00,000"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        subscription = IpoSubscription.objects.create(
+            ipo=ipo,
+            user=user,
+            bid_price=bid_price,
+            bid_quantity=bid_qty,
+        )
+
+        subscription.save()
+
+        portfolio.cash = portfolio.cash - required_cash
+        portfolio.save()
+
+        return Response({"detail": "Ipo subscribed successfully"}, status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([])

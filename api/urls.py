@@ -12,5 +12,8 @@ urlpatterns = [
     path('cash/', views.UserCashApi.as_view(), name='cash'),
     path('availablequantity/<int:id>', views.UserStocksApi.as_view(), name='available-qty'),
     path('transactions/', views.TransactionList.as_view(), name='transactions'),
-    path('market/', views.market_status, name='market-status')
+    path('market/', views.market_status, name='market-status'),
+    path('ipos/', views.IpoList.as_view(), name='ipos-list'),
+    path('ipos/<int:pk>', views.IpoDetail.as_view(), name='ipos-detail'),
+    path('ipos/subscribe/<int:id>', views.IpoSubscriptionApi.as_view(), name='ipos-subscribe'),
 ]

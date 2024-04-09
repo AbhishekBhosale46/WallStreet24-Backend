@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import News, Stock, Portfolio, Holding, Transaction
+from core.models import News, Stock, Portfolio, Holding, Transaction, Ipo, IpoSubscription
 from django.db.models import Sum, F
 
 
@@ -52,6 +52,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         )
         return list(holdings)
 
+
 class TransactionSerializer(serializers.ModelSerializer):
     ticker = serializers.SerializerMethodField()
 
@@ -62,3 +63,18 @@ class TransactionSerializer(serializers.ModelSerializer):
     def get_ticker(self, transaction):
         return transaction.stock.ticker
     
+
+class IpoSerializer(serializers.ModelSerializer):
+    stock_name = serializers.SerializerMethodField()
+    stock_ticker = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ipo
+        fields = ["id", "stock_name", "stock_ticker", "start_date", "end_date", "issue_size",\
+                  "floor_price", "ceil_price", "lot_size", "red_herring_prospectus"]
+
+    def get_stock_name(self, ipo):
+        return ipo.stock.name
+
+    def get_stock_ticker(self, ipo):
+        return ipo.stock.ticker
