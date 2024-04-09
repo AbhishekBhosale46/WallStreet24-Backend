@@ -17,7 +17,7 @@ class NewsList(generics.ListAPIView):
     serializer_class = serializers.NewsSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(is_published=True).order_by('published_at')
+        return self.queryset.filter(is_published=True).order_by('-published_at')
 
 
 class NewsDetail(generics.RetrieveAPIView):
