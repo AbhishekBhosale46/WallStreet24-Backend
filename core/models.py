@@ -130,8 +130,8 @@ class Market(models.Model):
 
 class Ipo(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
     issue_size = models.IntegerField()
     floor_price = models.IntegerField()
     ceil_price = models.IntegerField()
