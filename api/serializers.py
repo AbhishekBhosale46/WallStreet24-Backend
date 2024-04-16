@@ -35,6 +35,7 @@ class StockDetailSerializer(serializers.ModelSerializer):
 class PortfolioSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     holdings = serializers.SerializerMethodField()
+    networth = serializers.SerializerMethodField()
 
     class Meta:
         model = Portfolio
@@ -52,6 +53,15 @@ class PortfolioSerializer(serializers.ModelSerializer):
         )
         return list(holdings)
 
+    def get_networth(self, portfolio):
+        user = portfolio.user.id
+        user_cash = portfolio.cash
+        holdings = self.get_holdings(portfolio)
+        user_portfolio_value = 0
+        for holding in holdings:
+            user_portfolio_value += holding.total_quantity * holding.stock__current_price
+        return (user_cash*0.4) + (user_portfolio_value*0.6)
+        
 
 class TransactionSerializer(serializers.ModelSerializer):
     ticker = serializers.SerializerMethodField()
