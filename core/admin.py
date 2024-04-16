@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db.models import Avg
 from . import models
+from datetime import datetime
 
 class IpoAdmin(admin.ModelAdmin):
 
@@ -17,7 +18,14 @@ class IpoAdmin(admin.ModelAdmin):
             avg_bid_price = (curr_ipo_subs.aggregate(avg_bid=Avg("bid_price")))['avg_bid']
             avg_bid_price = int(avg_bid_price)
             ipo.listing_price=avg_bid_price
+            stock_id = ipo.stock.id
+            stock = models.Stock.objects.get(id=stock_id)
+            stock.is_listed = True
+            stock.current_price = avg_bid_price
+            stock.price_history.append({'price': str(avg_bid_price), 'datetime': str(datetime.now())})
+            stock.price_history.append({'price': str(avg_bid_price), 'datetime': str(datetime.now())})
             ipo.save()
+            stock.save()
 
 
 class IpoSubscriptionAdmin(admin.ModelAdmin):

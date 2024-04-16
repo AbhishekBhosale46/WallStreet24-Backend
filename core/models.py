@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
 )
 from decimal import Decimal
 import random
+from datetime import datetime
 
 class UserManager(BaseUserManager):
     
@@ -58,6 +59,12 @@ class Stock(models.Model):
     def price_change(self):
         last_traded_price = Decimal((self.price_history[-2]).get("price"))
         return str(((self.current_price-last_traded_price)/last_traded_price)*100)
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.price_history.append({'price': str(self.current_price), 'datetime': str(datetime.now())})
+            self.price_history.append({'price': str(self.current_price), 'datetime': str(datetime.now())})
+        super().save(*args, **kwargs)
 
 
 class News(models.Model):

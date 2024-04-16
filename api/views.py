@@ -8,6 +8,7 @@ from django.db.models import Sum
 from core.models import News, Stock, Portfolio, Transaction, Holding, Market, Ipo, IpoSubscription
 from . import serializers
 from rest_framework.views import APIView
+from datetime import date
 
 
 class NewsList(generics.ListAPIView):
@@ -215,6 +216,12 @@ class IpoSubscriptionApi(APIView):
 
         bid_price = request.data.get("bid_price", None)
         bid_qty = request.data.get("bid_quantity", None)
+
+        if date.today()<ipo.start_date:
+            return Response({"detail": "IPO subscription has not started yet"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if date.today()>ipo.end_date:
+            return Response({"detail": "IPO subscription has been closed"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not bid_price:
             return Response({"detail": "Bid price not given"}, status=status.HTTP_400_BAD_REQUEST)
