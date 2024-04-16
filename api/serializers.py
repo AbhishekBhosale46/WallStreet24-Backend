@@ -39,7 +39,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Portfolio
-        fields = ["id", "username", "cash", "holdings"]
+        fields = ["id", "username", "cash", "holdings", "networth"]
 
     def get_username(self, portfolio):
         return portfolio.user.name
@@ -61,7 +61,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
         for holding in holdings:
             user_portfolio_value += holding.total_quantity * holding.stock__current_price
         return (user_cash*0.4) + (user_portfolio_value*0.6)
-        
+
 
 class TransactionSerializer(serializers.ModelSerializer):
     ticker = serializers.SerializerMethodField()
