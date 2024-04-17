@@ -29,7 +29,7 @@ class StockSerializer(serializers.ModelSerializer):
 class StockDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = ["id", "name", "ticker", "current_price", "price_change", "price_history"]
+        fields = ["id", "name", "ticker", "current_price", "price_change", "price_history", "details"]
 
 
 class PortfolioSerializer(serializers.ModelSerializer):

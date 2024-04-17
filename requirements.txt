@@ -11,3 +11,4 @@ sqlparse
 pytz
 gunicorn
 python-dotenv
+django-tinymce

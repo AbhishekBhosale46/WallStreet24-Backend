@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
 from decimal import Decimal
 import random
 from datetime import datetime
+from tinymce import models as tinymce_models
 
 class UserManager(BaseUserManager):
     
@@ -52,6 +53,7 @@ class Stock(models.Model):
     current_price = models.DecimalField(max_digits=10, decimal_places=2)
     price_history = models.JSONField(default=list, blank=True)
     is_listed = models.BooleanField()
+    details = tinymce_models.HTMLField(default='')
 
     def __str__(self):
         return f"{self.name}-{self.ticker}"
