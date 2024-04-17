@@ -23,8 +23,9 @@ class UserManager(BaseUserManager):
         )
         return user
 
-    def create_superuser(self, email, password):
-        user = self.create_user(email, password)
+    def create_superuser(self, name, password):
+        email = f"{name}@wallstreet.com"
+        user = self.create_user(email=email, password=password, name=name)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -32,7 +33,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255)
     name = models.CharField(max_length=255, unique=True)
     contact_no = models.CharField(max_length=10)
     first_name = models.CharField(max_length=255)
