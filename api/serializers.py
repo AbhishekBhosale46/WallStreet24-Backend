@@ -59,8 +59,8 @@ class PortfolioSerializer(serializers.ModelSerializer):
         holdings = self.get_holdings(portfolio)
         user_portfolio_value = 0
         for holding in holdings:
-            user_portfolio_value += holding.total_quantity * holding.stock__current_price
-        return (user_cash*0.4) + (user_portfolio_value*0.6)
+            user_portfolio_value += int(holding.get('total_quantity',0)) * int(holding.get('stock__current_price',0))
+        return int(user_cash*0.4) + int(user_portfolio_value*0.6)
 
 
 class TransactionSerializer(serializers.ModelSerializer):
