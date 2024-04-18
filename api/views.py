@@ -5,10 +5,11 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.db.models import Sum
-from core.models import News, Stock, Portfolio, Transaction, Holding, Market, Ipo, IpoSubscription
+from core.models import News, Stock, Portfolio, Transaction, Holding, Market, Ipo, IpoSubscription, User
 from . import serializers
 from rest_framework.views import APIView
 from datetime import date
+from django.db.models import Sum, F
 
 
 class NewsList(generics.ListAPIView):
@@ -264,3 +265,35 @@ class IpoSubscriptionApi(APIView):
 def market_status(request):
     market = Market.objects.get(id=1)
     return Response({"is_open": market.is_open}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([])
+@authentication_classes([])
+def get_rankings(request):
+    users = User.objects.all()
+    ranks = []
+    for user in users:
+        portfolio = Portfolio.objects.get(user=user)
+        user_id = portfolio.user.id
+        holdings = Holding.objects.filter(portfolio__user__id=user_id,
+        transaction__transaction_type="buy").values("stock","stock__name", "stock__ticker", "stock__current_price").annotate(
+        avg_price = (Sum( F("transaction__traded_price") * F("quantity") ) / Sum("quantity")),
+        total_quantity=Sum("quantity")
+        )
+        holdings = list(holdings)
+        user_cash = portfolio.cash
+        user_portfolio_value = 0
+        for holding in holdings:
+            user_portfolio_value += int(holding.get('total_quantity',0)) * int(holding.get('stock__current_price',0))
+        ranks.append({
+            "user_id": user_id,
+            "name": user.name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "contact": user.contact_no,
+            "networth": int(user_cash*0.4) + int(user_portfolio_value*0.6)
+        })
+    ranks = sorted(ranks, key=lambda rank: rank["networth"], reverse=True)
+    return Response(ranks, status=status.HTTP_200_OK)

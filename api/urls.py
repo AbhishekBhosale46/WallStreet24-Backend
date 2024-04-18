@@ -16,4 +16,5 @@ urlpatterns = [
     path('ipos/', views.IpoList.as_view(), name='ipos-list'),
     path('ipos/<int:pk>', views.IpoDetail.as_view(), name='ipos-detail'),
     path('ipos/subscribe/<int:id>', views.IpoSubscriptionApi.as_view(), name='ipos-subscribe'),
+    path('ranking/', views.get_rankings, name="rankings")
 ]
