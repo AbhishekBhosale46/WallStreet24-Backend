@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-i!(b@4%v!6vfm0*yi_l01anf^%t%y6_-zz9(jazjwk60^bee1_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*.credenz.in']
 
 
 # Application definition
@@ -191,4 +191,6 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
+CSRF_TRUSTED_ORIGINS = ['https://api.wallstreet.credenz.in', 'https://wallstreet.credenz.in']
