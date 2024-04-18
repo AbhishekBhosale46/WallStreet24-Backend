@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         user_portfolio = Portfolio.objects.create(
             user=user,
-            cash=9999999
+            cash=1000000
         )
         return user
 
