@@ -1,6 +1,9 @@
 version: '3'
 
+# THESE ARE ALL THE CONTAINER CONFIGURATIONS  
 services:
+
+  # MAIN BACKEND SERVER
   backend:
     build: 
       context: .
@@ -11,7 +14,8 @@ services:
     command: >
       sh -c "python3 manage.py makemigrations &&
              python3 manage.py migrate && 
-             python3 manage.py runserver 0.0.0.0:8000"
+             python manage.py collectstatic --no-input &&
+             gunicorn wallstreet24.wsgi:application --bind 0.0.0.0:8000 -w 3"
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
@@ -19,7 +23,10 @@ services:
     depends_on:
       - db
       - redis
+    volumes:
+      - static_files:/backend/static/
 
+  # REDIS CONTAINER (MESSAGE BROKER)
   redis:
     image: redis:latest
     container_name: redis
@@ -30,6 +37,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   
+  # CELERY WORKER TO EXECUTE BACKGROUD TASKS
   celery:
     build: 
       context: .
@@ -39,12 +47,13 @@ services:
       - redis
       - backend
       - db
-    command: celery -A wallstreet24 worker -l info
+    command: celery -A wallstreet24 worker -l info --concurrency=4
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
+  # CELERY BEAT WORKER TO SEND PERIODIC TASKS
   celery-beat:
     build: 
       context: .
@@ -61,9 +70,37 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
+  # POSTGRES DATABASE
   db:
     image: postgres
     environment:
-        - POSTGRES_DB=postgres
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  # NGINIX FOR LOAD BALANCING AND SERVERING STATIC FILES (REVERSE PROXY)
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_files:/backend/static/
+    ports:
+      - "801:80"
+    depends_on:
+      - backend
+    restart: "on-failure"
+
+  # NGINIX AS A REVERSE PROXY (USED FOR GENERATING SSL CERTIFICATE)
+  app:
+    image: "jc21/nginx-proxy-manager:latest"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+
+# STATIC FILES VOLUME
+volumes:
+    static_files:
