@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-i!(b@4%v!6vfm0*yi_l01anf^%t%y6_-zz9(jazjwk60^bee1_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*.credenz.in']
+ALLOWED_HOSTS = ['api.wallstreet.credenz.in', 'wallstreet.credenz.in']
 
 
 # Application definition
@@ -143,6 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -191,6 +192,8 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ORIGIN_ALLOW_ALL = False
 
 CSRF_TRUSTED_ORIGINS = ['https://api.wallstreet.credenz.in', 'https://wallstreet.credenz.in']
+
+CORS_ORIGIN_WHITELIST = ['https://api.wallstreet.credenz.in', 'https://wallstreet.credenz.in']
