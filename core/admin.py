@@ -9,13 +9,20 @@ class IpoAdmin(admin.ModelAdmin):
 
     @admin.action(description="Calculate listing price")
     def calculate_listing_price(self, request, queryset):
-        
+
         ipo_subscriptions = models.IpoSubscription.objects.all()
         ipos = queryset
-
+        
         for ipo in ipos:
-            curr_ipo_subs = ipo_subscriptions.filter(ipo=ipo)
-            avg_bid_price = (curr_ipo_subs.aggregate(avg_bid=Avg("bid_price")))['avg_bid']
+            ipo_subs = ipo_subscriptions.filter(ipo=ipo)
+            total_bid_price = 0
+            total_bid_qty = 0
+            for subs in ipo_subs:
+                total_bid_price += subs.bid_price * subs.bid_quantity
+                total_bid_qty += subs.bid_quantity
+            avg_bid_price = 0
+            if total_bid_qty > 0:
+                avg_bid_price = total_bid_price / total_bid_qty
             avg_bid_price = int(avg_bid_price)
             ipo.listing_price=avg_bid_price
             stock_id = ipo.stock.id

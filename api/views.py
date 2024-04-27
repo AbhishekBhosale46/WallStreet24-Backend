@@ -230,7 +230,7 @@ class IpoSubscriptionApi(APIView):
         if not bid_qty:
             return Response({"detail": "Bid Quantity not given"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if IpoSubscription.objects.filter(user=user).exists():
+        if IpoSubscription.objects.filter(user=user, ipo=ipo).exists():
             return Response({"detail": "You have already subscribed the ipo"}, status=status.HTTP_400_BAD_REQUEST)
 
         bid_price = int(bid_price)

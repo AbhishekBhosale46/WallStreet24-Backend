@@ -58,6 +58,8 @@ class Stock(models.Model):
     price_history = models.JSONField(default=list, blank=True)
     is_listed = models.BooleanField()
     details = tinymce_models.HTMLField(default='')
+    total_shares = models.IntegerField()
+    remaining_shares = models.IntegerField()
 
     def __str__(self):
         return f"{self.name}-{self.ticker}"
