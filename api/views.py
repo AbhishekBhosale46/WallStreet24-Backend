@@ -144,7 +144,7 @@ class SellStockApi(APIView):
                 holding.delete()
 
         portfolio.cash += (temp_qty * sell_price)
-        portfolio.save
+        portfolio.save()
 
         transaction = Transaction.objects.create(
             user=user,
