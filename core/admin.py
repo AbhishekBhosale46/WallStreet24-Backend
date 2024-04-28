@@ -18,8 +18,8 @@ class IpoAdmin(admin.ModelAdmin):
             total_bid_price = 0
             total_bid_qty = 0
             for subs in ipo_subs:
-                total_bid_price += subs.bid_price * subs.bid_quantity
-                total_bid_qty += subs.bid_quantity
+                total_bid_price += subs.bid_price * (subs.bid_quantity * ipo.lot_size)
+                total_bid_qty += (subs.bid_quantity * ipo.lot_size)
             avg_bid_price = 0
             if total_bid_qty > 0:
                 avg_bid_price = total_bid_price / total_bid_qty
