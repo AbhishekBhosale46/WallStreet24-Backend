@@ -153,7 +153,9 @@ class Ipo(models.Model):
     lot_size = models.IntegerField()
     red_herring_prospectus = models.TextField()
     listing_price = models.IntegerField(default=0)
-
+    total_shares_demanded = models.IntegerField(default=0)
+    remaining_shares = models.IntegerField()
+    
     def __str__(self) -> str:
         return f"{self.stock.name}"
 
