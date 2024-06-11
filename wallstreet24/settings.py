@@ -176,8 +176,8 @@ REST_FRAMEWORK = {
 
 # Celery Settings
 CELERY_TIMEZONE = 'Asia/Kolkata'
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # Celer beat scheduling
 CELERY_BEAT_SCHEDULE = {

@@ -1,10 +1,12 @@
 from celery import shared_task
-from core.models import News, Stock, Market
+from core.models import Holding, News, Portfolio, Stock, Market, Transaction
 from datetime import datetime, timedelta
 from celery import shared_task
 import random
 from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
+from django.db import transaction as django_transaction
 
 
 @shared_task
@@ -62,3 +64,73 @@ def update_prices():
                 print(f'UPDATE PRICE OF {stock.name} IS {stock.current_price}')
         else:
             print('MARKET IS CLOSED')
+
+
+@shared_task
+def process_buy_order(user_id, stock_id, transaction_id, buy_price, buy_qty, required_cash):
+    
+    stock = get_object_or_404(Stock, id=stock_id)
+    portfolio = Portfolio.objects.get(user=user_id)
+    transaction = Transaction.objects.get(id=transaction_id)
+
+    buy_price = Decimal(buy_price)
+    buy_qty = int(buy_qty)
+    required_cash = int(required_cash)
+
+    price_diff = ((buy_price-stock.current_price)/(stock.current_price))*100
+    
+    with django_transaction.atomic():
+        if price_diff>2 and stock.remaining_shares>=buy_qty:
+            stock.remaining_shares -= buy_qty
+            transaction_fees = 0.02 * required_cash
+            portfolio.cash -= (required_cash + transaction_fees)
+            transaction.transaction_status = "success"
+            holding = Holding.objects.create(
+                portfolio=portfolio,
+                stock=stock,
+                transaction=transaction,
+                quantity=buy_qty,
+            )
+            stock.save()
+            portfolio.save()
+            transaction.save()
+        else:
+            transaction.transaction_status = "failed"
+            transaction.save()
+
+
+@shared_task
+def process_sell_order(user_id, stock_id, transaction_id, sell_price, sell_qty):
+
+    stock = get_object_or_404(Stock, id=stock_id)
+    portfolio = Portfolio.objects.get(user=user_id)
+    transaction = Transaction.objects.get(id=transaction_id)
+
+    sell_price = Decimal(sell_price)
+    sell_qty = int(sell_qty)
+
+    price_diff = ((sell_price-stock.current_price)/(stock.current_price))*100
+
+    with django_transaction.atomic():
+        if price_diff<2:
+            available_holdings = Holding.objects.filter(portfolio=portfolio, stock=stock).order_by("transaction__transaction_datetime")
+            temp_qty = sell_qty
+            for holding in available_holdings:
+                if sell_qty==0:
+                    break
+                diff = min(holding.quantity, sell_qty)
+                holding.quantity -= diff
+                sell_qty -= diff
+                holding.save()
+                if holding.quantity == 0:
+                    holding.delete()
+            stock.remaining_shares += temp_qty
+            transaction_fees = Decimal(0.02) * (temp_qty * sell_price)
+            portfolio.cash += ((temp_qty * sell_price) - transaction_fees)
+            transaction.transaction_status = "success"
+            stock.save()
+            portfolio.save()
+            transaction.save()
+        else:
+            transaction.transaction_status = "failed"
+            transaction.save()

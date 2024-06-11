@@ -10,6 +10,7 @@ from . import serializers
 from rest_framework.views import APIView
 from datetime import date
 from django.db.models import Sum, F
+from .tasks import process_buy_order, process_sell_order
 
 
 class NewsList(generics.ListAPIView):
@@ -65,36 +66,24 @@ class BuyStockApi(APIView):
         buy_price = Decimal(buy_price)
         buy_qty = int(buy_qty)
 
-        price_diff = ((buy_price-stock.current_price)/(stock.current_price))*100
-        if price_diff > 2 or price_diff < -2:
-            return Response({"detail": "Cannot buy at this price"}, status=status.HTTP_400_BAD_REQUEST)
-
         available_cash = Decimal(portfolio.cash)
         required_cash = buy_price * buy_qty
 
         if required_cash > available_cash:
             return Response({"detail": "You don't have enough cash to buy this stock"}, status=status.HTTP_400_BAD_REQUEST)
 
-        available_cash = available_cash - required_cash
-        portfolio.cash = available_cash
-        portfolio.save()
-
         transaction = Transaction.objects.create(
             user=user,
             stock=stock,
             traded_price=buy_price,
             quantity=buy_qty,
-            transaction_type="buy"
+            transaction_type="buy",
+            transaction_status="pending"
         )
 
-        holding = Holding.objects.create(
-            portfolio=portfolio,
-            stock=stock,
-            transaction=transaction,
-            quantity=buy_qty,
-        )
+        process_buy_order.delay(user_id=portfolio.user.id, stock_id=id, transaction_id=transaction.id, buy_price=buy_price, buy_qty=buy_qty, required_cash=required_cash)
 
-        return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
+        return Response({"detail": "Order Placed Successfully"}, status=status.HTTP_201_CREATED)
 
 
 class SellStockApi(APIView):
@@ -116,10 +105,6 @@ class SellStockApi(APIView):
 
         sell_price = Decimal(sell_price)
         sell_qty = int(sell_qty)
-
-        price_diff = ((sell_price-stock.current_price)/(stock.current_price))*100
-        if price_diff > 2 or price_diff < -2:
-            return Response({"detail": "Cannot sell at this price"}, status=status.HTTP_400_BAD_REQUEST)
         
         available_holdings = Holding.objects.filter(portfolio=portfolio, stock=stock).order_by("transaction__transaction_datetime")
 
@@ -131,30 +116,18 @@ class SellStockApi(APIView):
         if sell_qty>available_qty:
             return Response({"detail": "You don't have enough available stocks"}, status=status.HTTP_400_BAD_REQUEST)
 
-        temp_qty = sell_qty
-
-        for holding in available_holdings:
-            if sell_qty==0:
-                break
-            diff = min(holding.quantity, sell_qty)
-            holding.quantity -= diff
-            sell_qty -= diff
-            holding.save()
-            if holding.quantity == 0:
-                holding.delete()
-
-        portfolio.cash += (temp_qty * sell_price)
-        portfolio.save()
-
         transaction = Transaction.objects.create(
             user=user,
             stock=stock,
             traded_price=sell_price,
-            quantity=temp_qty,
-            transaction_type="sell"
+            quantity=sell_qty,
+            transaction_type="sell",
+            transaction_status="pending"
         )
 
-        return Response({"detail": "Transaction completed"}, status=status.HTTP_201_CREATED)
+        process_sell_order.delay(user_id=portfolio.user.id, stock_id=id, transaction_id=transaction.id, sell_price=sell_price, sell_qty=sell_qty)
+
+        return Response({"detail": "Order Placed Successfully"}, status=status.HTTP_201_CREATED)
 
 
 class PortfolioApi(APIView):
