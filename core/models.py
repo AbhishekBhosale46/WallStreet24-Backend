@@ -58,6 +58,8 @@ class Stock(models.Model):
     price_history = models.JSONField(default=list, blank=True)
     is_listed = models.BooleanField()
     details = tinymce_models.HTMLField(default='')
+    total_shares = models.IntegerField()
+    remaining_shares = models.IntegerField()
 
     def __str__(self):
         return f"{self.name}-{self.ticker}"
@@ -115,6 +117,7 @@ class Transaction(models.Model):
     traded_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     transaction_type = models.CharField(max_length=5, choices=[('buy', 'buy'), ('sell', 'sell')])
+    transaction_status = models.CharField(max_length=10, choices=[('failed', 'failed'), ('pending', 'pending'), ('success', 'success')])
     transaction_datetime = models.DateTimeField(auto_now_add=True)
 
 
@@ -151,7 +154,9 @@ class Ipo(models.Model):
     lot_size = models.IntegerField()
     red_herring_prospectus = models.TextField()
     listing_price = models.IntegerField(default=0)
-
+    total_shares_demanded = models.IntegerField(default=0)
+    remaining_shares = models.IntegerField()
+    
     def __str__(self) -> str:
         return f"{self.stock.name}"
 
